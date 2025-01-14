@@ -1,122 +1,118 @@
-# 🚀 HL7 to FHIR Data Conversion Repository
+# /docs: Workflow Diagrams and Documentation
 
-Welcome to the **HL7 to FHIR Data Conversion Repository**! This repository is your guide to transforming HL7 messages into FHIR-compliant resources, streamlining interoperability and innovation in healthcare IT. 🌐
-
-Register for the full course here: https://stan.store/Flipping_Innovations/p/empowering-healthcare-tech-professionals
----
-
-## 📖 What is FHIR?
-FHIR (Fast Healthcare Interoperability Resources) is a modern standard for exchanging healthcare information electronically. It uses web technologies like RESTful APIs and JSON/XML, making data exchange flexible and scalable. This repository aligns with **Da Vinci implementation standards** for payer-provider workflows.
-
-🔗 [Learn more about FHIR](https://hl7.org/fhir/)  
-🔗 [Explore the Da Vinci Project](https://www.hl7.org/davinci/)
+This document provides detailed workflow diagrams and accompanying documentation to illustrate the HL7-to-FHIR transformation process, mapping logic, and interaction with payer systems.
 
 ---
 
-## 🔑 Key Features
-- **📂 Da Vinci Use Cases:**
-  - CRD (Coverage Requirements Discovery)
-  - PAS (Prior Authorization Support)
-  - PDex (Payer Data Exchange)
-- **✅ Validation Tools:** Python scripts to validate FHIR resources.
-- **📜 Sample HL7 Messages:** ADT, ORU, and DFT examples with annotations.
-- **⚙️ Interactive APIs:** Swagger/OpenAPI for seamless integration.
-- **🐳 Containerization:** Dockerfile for streamlined deployment.
+## Workflow Diagrams
+
+### 1. **HL7 to FHIR Transformation Workflow**
+
+**Description:** This workflow depicts the end-to-end process of transforming an HL7 message into a FHIR-compliant resource and submitting it to a FHIR server.
+
+#### Steps:
+1. **HL7 Data Ingestion**:
+    - Parse raw HL7 messages to extract relevant segments (e.g., PID, IN1, FT1).
+    - Validate the message structure using an HL7 parser (e.g., `hl7apy`).
+2. **Mapping Logic**:
+    - Map HL7 segments to FHIR resource attributes based on the Da Vinci use cases.
+    - Apply coding standards (e.g., SNOMED, LOINC) where applicable.
+3. **FHIR Resource Generation**:
+    - Generate a JSON object conforming to FHIR standards.
+    - Validate the JSON using a FHIR validator.
+4. **FHIR Server Interaction**:
+    - POST the FHIR resource to a server (e.g., HAPI FHIR).
+    - Handle responses and errors.
+
+![HL7 to FHIR Workflow](examples/diagrams/hl7_to_fhir_workflow.png)
 
 ---
 
-## 🛠️ Getting Started
-### 1. Clone the Repository
+### 2. **Payer Data Exchange Workflow (PDex)**
+
+**Description:** This workflow illustrates how a provider queries a payer system for patient data (e.g., claims, coverage) and receives FHIR resources in response.
+
+#### Steps:
+1. **Provider Request**:
+    - The provider system initiates a GET request for specific data (e.g., `/Coverage/{id}`).
+2. **Payer System Processing**:
+    - The payer system retrieves the requested data from its database.
+    - Converts the data into FHIR resources (e.g., `Coverage`, `ExplanationOfBenefit`).
+3. **Response Delivery**:
+    - The payer system returns the FHIR resources to the provider.
+    - The provider validates and integrates the data.
+
+![PDex Workflow](examples/diagrams/pdex_workflow.png)
+
+---
+
+## Documentation
+
+### HL7 Segments and FHIR Mapping
+
+#### HL7 Segment: PID (Patient Identification)
+| HL7 Field           | FHIR Attribute           | Example Value       |
+|---------------------|--------------------------|---------------------|
+| PID-3 (Patient ID)  | Patient.identifier.value | 123456              |
+| PID-5 (Name)        | Patient.name.family      | Doe                 |
+| PID-7 (Birth Date)  | Patient.birthDate        | 1982-05-15          |
+| PID-8 (Gender)      | Patient.gender           | male                |
+
+#### HL7 Segment: IN1 (Insurance Information)
+| HL7 Field               | FHIR Attribute              | Example Value         |
+|-------------------------|-----------------------------|-----------------------|
+| IN1-3 (Insurance Name)  | Coverage.payor.display      | Aetna                |
+| IN1-4 (Plan Group)      | Coverage.group              | Group Health Plan    |
+
+---
+
+### FHIR Resource Validation Checklist
+
+#### Pre-Submission Checklist:
+1. Ensure required attributes (e.g., `resourceType`, `id`) are present.
+2. Validate coding values against terminologies (e.g., SNOMED, LOINC).
+3. Confirm JSON structure using the FHIR validator.
+
+#### Example Validation Command (FHIR Validator):
 ```bash
-git clone https://github.com/flippinginnovations/hl7-to-fhir-conversion.git
-cd hl7-to-fhir-conversion
-```
-
-### 2. Install Dependencies
-Ensure you have Python and necessary libraries installed:
-```bash
-pip install requests hl7apy
-```
-
-### 3. Run Conversion Scripts
-Use provided scripts to transform HL7 messages into FHIR resources:
-```bash
-python scripts/convert_hl7_to_fhir.py
-```
-
----
-
-## 📂 Repository Structure
-- **`/examples`**: Sample HL7 messages and converted FHIR resources.
-- **`/scripts`**: Python scripts for conversion and validation.
-- **`/tests`**: Unit tests for HL7-to-FHIR transformation.
-- **`/docs`**: Workflow diagrams and documentation.
-
----
-
-## 📊 Da Vinci Use Case Examples
-### 🏥 CRD (Coverage Requirements Discovery)
-- Simplify eligibility checks and coverage requirements.
-- Includes `EligibilityRequest` and `EligibilityResponse` resources.
-
-### ✅ PAS (Prior Authorization Support)
-- Automate and accelerate prior authorization workflows.
-- Includes `PriorAuthorizationRequest` and `PriorAuthorizationResponse` resources.
-
-### 🔄 PDex (Payer Data Exchange)
-- Enable seamless data exchange for value-based care.
-- Includes `ExplanationOfBenefit` and `Coverage` resources.
-
----
-
-## 🔒 Security Best Practices
-- Implement OAuth 2.0 for API authentication. 🔑
-- Use TLS/SSL to encrypt data. 🔐
-- Refer to the `/docs` folder for configuration examples. 📄
-
----
-
-## 🧪 Testing
-- Run unit tests for conversions:
-```bash
-pytest tests/
-```
-- Mock HL7 data is provided in `/tests`.
-
----
-
-## 🐳 Containerization
-Build and run the Docker container:
-```bash
-docker build -t hl7-to-fhir .
-docker run -v $(pwd)/examples:/app/examples hl7-to-fhir
+java -jar validator_cli.jar example_fhir.json
 ```
 
 ---
 
-## 📢 Contributing
-We welcome contributions! 🛠️
-- Report bugs and suggest features via **Issues**.
-- Follow guidelines in `CONTRIBUTING.md`.
+### Common Error Handling
+
+#### Error: Missing Required Field
+- **Cause:** Required fields (e.g., `resourceType`, `id`) are missing.
+- **Solution:** Add missing fields and revalidate the JSON.
+
+#### Error: Invalid Coding
+- **Cause:** The coding value does not match the expected terminology.
+- **Solution:** Verify the value against SNOMED, LOINC, or applicable standards.
 
 ---
 
-## 🌟 Real-World Benefits
-- **💸 Cost Savings:** Automates payer workflows, reducing overhead.
-- **⚡ Efficiency:** Enables real-time data exchange.
-- **📏 Compliance:** Meets interoperability standards.
+## Security Best Practices for FHIR Workflows
+
+### Authentication and Authorization
+- **Use OAuth 2.0:** Secure API endpoints with token-based authentication.
+
+#### Example Configuration (FastAPI):
+```python
+from fastapi import FastAPI, Security
+from fastapi.security import OAuth2PasswordBearer
+
+app = FastAPI()
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
+@app.get("/secure-data")
+async def read_secure_data(token: str = Security(oauth2_scheme)):
+    return {"message": "Secure Access Granted"}
+```
+
+### Data Encryption
+- **Use TLS/SSL:** Encrypt data in transit to prevent interception.
 
 ---
 
-## 📹 Tutorials and Demos
-🎥 Tutorials on:
-- HL7-to-FHIR conversion.
-- Validating FHIR resources.
-- Using APIs for payer workflows.
-
-Stay tuned for links to YouTube demos! 📺
-Register for the full course here: https://stan.store/Flipping_Innovations/p/empowering-healthcare-tech-professionals
----
-
-## 📬 Questions or Feedback?
-Feel free to reach out via **Discussions** or open an **Issue**. Let’s innovate and make healthcare data more accessible and actionable! 💡
+By following this documentation, you can efficiently execute, validate, and secure HL7-to-FHIR transformations while adhering to interoperability standards.
