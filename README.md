@@ -1,122 +1,113 @@
-# 🚀 HL7 to FHIR Data Conversion Repository
+# 🐳 Containerization
 
-Welcome to the **HL7 to FHIR Data Conversion Repository**! This repository is your guide to transforming HL7 messages into FHIR-compliant resources, streamlining interoperability and innovation in healthcare IT. 🌐
-
-Register for the full course here: https://stan.store/Flipping_Innovations/p/empowering-healthcare-tech-professionals
----
-
-## 📖 What is FHIR?
-FHIR (Fast Healthcare Interoperability Resources) is a modern standard for exchanging healthcare information electronically. It uses web technologies like RESTful APIs and JSON/XML, making data exchange flexible and scalable. This repository aligns with **Da Vinci implementation standards** for payer-provider workflows.
-
-🔗 [Learn more about FHIR](https://hl7.org/fhir/)  
-🔗 [Explore the Da Vinci Project](https://www.hl7.org/davinci/)
+This document provides instructions for building and running a Docker container for the HL7-to-FHIR conversion workflow. Containerization ensures a consistent environment for deploying and running the application.
 
 ---
 
-## 🔑 Key Features
-- **📂 Da Vinci Use Cases:**
-  - CRD (Coverage Requirements Discovery)
-  - PAS (Prior Authorization Support)
-  - PDex (Payer Data Exchange)
-- **✅ Validation Tools:** Python scripts to validate FHIR resources.
-- **📜 Sample HL7 Messages:** ADT, ORU, and DFT examples with annotations.
-- **⚙️ Interactive APIs:** Swagger/OpenAPI for seamless integration.
-- **🐳 Containerization:** Dockerfile for streamlined deployment.
+## Prerequisites
+1. **Docker Installed:** Ensure Docker is installed and running on your system.
+   - [Docker Installation Guide](https://docs.docker.com/get-docker/)
+2. **Repository Setup:** Clone the repository and navigate to the root directory:
+   ```bash
+   git clone https://github.com/your-username/hl7-to-fhir.git
+   cd hl7-to-fhir
+   ```
 
 ---
 
-## 🛠️ Getting Started
-### 1. Clone the Repository
-```bash
-git clone https://github.com/flippinginnovations/hl7-to-fhir-conversion.git
-cd hl7-to-fhir-conversion
-```
+## Dockerfile
 
-### 2. Install Dependencies
-Ensure you have Python and necessary libraries installed:
-```bash
-pip install requests hl7apy
-```
+The repository includes the following `Dockerfile` to containerize the HL7-to-FHIR transformation workflow:
 
-### 3. Run Conversion Scripts
-Use provided scripts to transform HL7 messages into FHIR resources:
-```bash
-python scripts/convert_hl7_to_fhir.py
+```dockerfile
+# Use a lightweight Python image
+FROM python:3.9-slim
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1
+
+# Install required Python libraries
+RUN pip install requests hl7apy
+
+# Copy the application code
+COPY ./examples /app/examples
+COPY ./scripts /app/scripts
+
+# Set the working directory
+WORKDIR /app
+
+# Default command to run the transformation script
+CMD ["python", "scripts/transform_hl7_to_fhir.py"]
 ```
 
 ---
 
-## 📂 Repository Structure
-- **`/examples`**: Sample HL7 messages and converted FHIR resources.
-- **`/scripts`**: Python scripts for conversion and validation.
-- **`/tests`**: Unit tests for HL7-to-FHIR transformation.
-- **`/docs`**: Workflow diagrams and documentation.
+## Build the Docker Image
 
----
-
-## 📊 Da Vinci Use Case Examples
-### 🏥 CRD (Coverage Requirements Discovery)
-- Simplify eligibility checks and coverage requirements.
-- Includes `EligibilityRequest` and `EligibilityResponse` resources.
-
-### ✅ PAS (Prior Authorization Support)
-- Automate and accelerate prior authorization workflows.
-- Includes `PriorAuthorizationRequest` and `PriorAuthorizationResponse` resources.
-
-### 🔄 PDex (Payer Data Exchange)
-- Enable seamless data exchange for value-based care.
-- Includes `ExplanationOfBenefit` and `Coverage` resources.
-
----
-
-## 🔒 Security Best Practices
-- Implement OAuth 2.0 for API authentication. 🔑
-- Use TLS/SSL to encrypt data. 🔐
-- Refer to the `/docs` folder for configuration examples. 📄
-
----
-
-## 🧪 Testing
-- Run unit tests for conversions:
-```bash
-pytest tests/
-```
-- Mock HL7 data is provided in `/tests`.
-
----
-
-## 🐳 Containerization
-Build and run the Docker container:
+To build the Docker image, run the following command from the root directory of the repository:
 ```bash
 docker build -t hl7-to-fhir .
+```
+
+### Output Example:
+```bash
+Sending build context to Docker daemon  10.24kB
+Step 1/6 : FROM python:3.9-slim
+ ---> e5b731a5999e
+Step 2/6 : ENV PYTHONUNBUFFERED=1
+ ---> Using cache
+ ---> b6c1a53e94bd
+Step 3/6 : RUN pip install requests hl7apy
+ ---> Running in 43c7c8fddf73
+...
+Successfully tagged hl7-to-fhir:latest
+```
+
+---
+
+## Run the Docker Container
+
+Run the Docker container with the following command:
+```bash
 docker run -v $(pwd)/examples:/app/examples hl7-to-fhir
 ```
 
----
+### Command Breakdown:
+- `-v $(pwd)/examples:/app/examples`: Mounts the `examples` directory from your local machine into the container for easy access to sample files.
+- `hl7-to-fhir`: Specifies the name of the Docker image to run.
 
-## 📢 Contributing
-We welcome contributions! 🛠️
-- Report bugs and suggest features via **Issues**.
-- Follow guidelines in `CONTRIBUTING.md`.
-
----
-
-## 🌟 Real-World Benefits
-- **💸 Cost Savings:** Automates payer workflows, reducing overhead.
-- **⚡ Efficiency:** Enables real-time data exchange.
-- **📏 Compliance:** Meets interoperability standards.
+### Expected Output:
+The container will execute the `transform_hl7_to_fhir.py` script and display the transformation results or any logs related to the process.
 
 ---
 
-## 📹 Tutorials and Demos
-🎥 Tutorials on:
-- HL7-to-FHIR conversion.
-- Validating FHIR resources.
-- Using APIs for payer workflows.
+## Verify the Container Workflow
+1. **Inspect Logs:** Use the `docker logs` command to check container output:
+   ```bash
+   docker logs <container-id>
+   ```
+2. **Access Transformed Files:** Check the mounted `examples` directory for output files generated by the container.
 
-Stay tuned for links to YouTube demos! 📺
-Register for the full course here: https://stan.store/Flipping_Innovations/p/empowering-healthcare-tech-professionals
 ---
 
-## 📬 Questions or Feedback?
-Feel free to reach out via **Discussions** or open an **Issue**. Let’s innovate and make healthcare data more accessible and actionable! 💡
+## Stopping and Cleaning Up
+1. **Stop the Container:**
+   ```bash
+   docker stop <container-id>
+   ```
+2. **Remove the Container:**
+   ```bash
+   docker rm <container-id>
+   ```
+3. **Remove the Docker Image:**
+   ```bash
+   docker rmi hl7-to-fhir
+   ```
+
+---
+
+## Notes
+- Ensure all sample HL7 and expected FHIR JSON files are located in the `examples` directory.
+- Update the `Dockerfile` if additional dependencies are required for your workflow.
+
+By containerizing the HL7-to-FHIR conversion workflow, you ensure a portable and reproducible environment for testing and deployment.
