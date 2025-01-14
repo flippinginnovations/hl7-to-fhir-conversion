@@ -1,122 +1,148 @@
-# 🚀 HL7 to FHIR Data Conversion Repository
+# /tests: Unit Tests for HL7-to-FHIR Transformation
 
-Welcome to the **HL7 to FHIR Data Conversion Repository**! This repository is your guide to transforming HL7 messages into FHIR-compliant resources, streamlining interoperability and innovation in healthcare IT. 🌐
-
-Register for the full course here: https://stan.store/Flipping_Innovations/p/empowering-healthcare-tech-professionals
----
-
-## 📖 What is FHIR?
-FHIR (Fast Healthcare Interoperability Resources) is a modern standard for exchanging healthcare information electronically. It uses web technologies like RESTful APIs and JSON/XML, making data exchange flexible and scalable. This repository aligns with **Da Vinci implementation standards** for payer-provider workflows.
-
-🔗 [Learn more about FHIR](https://hl7.org/fhir/)  
-🔗 [Explore the Da Vinci Project](https://www.hl7.org/davinci/)
+This document provides instructions for setting up and running unit tests for HL7-to-FHIR transformation. It includes details on tools, steps for testing using HAPI FHIR and Postman, and sample HL7 and FHIR resources.
 
 ---
 
-## 🔑 Key Features
-- **📂 Da Vinci Use Cases:**
-  - CRD (Coverage Requirements Discovery)
-  - PAS (Prior Authorization Support)
-  - PDex (Payer Data Exchange)
-- **✅ Validation Tools:** Python scripts to validate FHIR resources.
-- **📜 Sample HL7 Messages:** ADT, ORU, and DFT examples with annotations.
-- **⚙️ Interactive APIs:** Swagger/OpenAPI for seamless integration.
-- **🐳 Containerization:** Dockerfile for streamlined deployment.
+## Tools Required
+
+### 1. **Python and Pytest**
+- Install Python (>=3.8) and the `pytest` library for running automated unit tests.
+- Install the `hl7apy` and `requests` libraries for HL7 parsing and API interaction:
+  ```bash
+  pip install pytest hl7apy requests
+  ```
+
+### 2. **HAPI FHIR Server**
+- Download and run the [HAPI FHIR Server](https://hapifhir.io/):
+  ```bash
+  java -jar hapi-fhir-jpaserver-example-*.jar
+  ```
+- Use the default base URL: `http://localhost:8080/fhir`.
+
+### 3. **Postman**
+- Use [Postman](https://www.postman.com/) to manually test FHIR resources by sending requests to the HAPI FHIR server.
 
 ---
 
-## 🛠️ Getting Started
-### 1. Clone the Repository
-```bash
-git clone https://github.com/flippinginnovations/hl7-to-fhir-conversion.git
-cd hl7-to-fhir-conversion
+## Testing Setup
+
+### Directory Structure
 ```
-
-### 2. Install Dependencies
-Ensure you have Python and necessary libraries installed:
-```bash
-pip install requests hl7apy
-```
-
-### 3. Run Conversion Scripts
-Use provided scripts to transform HL7 messages into FHIR resources:
-```bash
-python scripts/convert_hl7_to_fhir.py
+/tests
+  |-- test_hl7_to_fhir.py   # Unit test script
+  |-- sample_hl7.hl7        # Sample HL7 message
+  |-- expected_fhir.json    # Expected FHIR resource
 ```
 
 ---
 
-## 📂 Repository Structure
-- **`/examples`**: Sample HL7 messages and converted FHIR resources.
-- **`/scripts`**: Python scripts for conversion and validation.
-- **`/tests`**: Unit tests for HL7-to-FHIR transformation.
-- **`/docs`**: Workflow diagrams and documentation.
+## Sample Fake Data
 
----
-
-## 📊 Da Vinci Use Case Examples
-### 🏥 CRD (Coverage Requirements Discovery)
-- Simplify eligibility checks and coverage requirements.
-- Includes `EligibilityRequest` and `EligibilityResponse` resources.
-
-### ✅ PAS (Prior Authorization Support)
-- Automate and accelerate prior authorization workflows.
-- Includes `PriorAuthorizationRequest` and `PriorAuthorizationResponse` resources.
-
-### 🔄 PDex (Payer Data Exchange)
-- Enable seamless data exchange for value-based care.
-- Includes `ExplanationOfBenefit` and `Coverage` resources.
-
----
-
-## 🔒 Security Best Practices
-- Implement OAuth 2.0 for API authentication. 🔑
-- Use TLS/SSL to encrypt data. 🔐
-- Refer to the `/docs` folder for configuration examples. 📄
-
----
-
-## 🧪 Testing
-- Run unit tests for conversions:
-```bash
-pytest tests/
+### HL7 Message: `sample_hl7.hl7`
+```hl7
+MSH|^~\&|SendingApp|SendingFac|ReceivingApp|ReceivingFac|202301011230||ADT^A01|12345|P|2.5
+PID|1||123456^^^MRN||Doe^John||19820515|M||||||||||123456789
+IN1|1|Aetna|123456|Group Health Plan|||||||Doe^John
 ```
-- Mock HL7 data is provided in `/tests`.
 
----
-
-## 🐳 Containerization
-Build and run the Docker container:
-```bash
-docker build -t hl7-to-fhir .
-docker run -v $(pwd)/examples:/app/examples hl7-to-fhir
+### Corresponding FHIR Resource: `expected_fhir.json`
+```json
+{
+  "resourceType": "Coverage",
+  "id": "example-coverage",
+  "status": "active",
+  "beneficiary": {
+    "reference": "Patient/123456"
+  },
+  "payor": [
+    {
+      "display": "Aetna"
+    }
+  ],
+  "group": "Group Health Plan"
+}
 ```
 
 ---
 
-## 📢 Contributing
-We welcome contributions! 🛠️
-- Report bugs and suggest features via **Issues**.
-- Follow guidelines in `CONTRIBUTING.md`.
+## Unit Test Script: `test_hl7_to_fhir.py`
+
+### Test File
+```python
+import pytest
+from hl7apy import parser
+from hl7_to_fhir import hl7_to_fhir_transform
+import requests
+
+FHIR_BASE_URL = "http://localhost:8080/fhir"
+
+# Sample HL7 and expected FHIR files
+HL7_MESSAGE_PATH = "./sample_hl7.hl7"
+EXPECTED_FHIR_PATH = "./expected_fhir.json"
+
+def test_hl7_to_fhir_conversion():
+    # Load HL7 message
+    with open(HL7_MESSAGE_PATH, "r") as hl7_file:
+        hl7_message = hl7_file.read()
+
+    # Perform transformation
+    fhir_resource = hl7_to_fhir_transform(hl7_message)
+
+    # Load expected FHIR resource
+    with open(EXPECTED_FHIR_PATH, "r") as fhir_file:
+        expected_fhir = fhir_file.read()
+
+    # Validate the transformation
+    assert fhir_resource == expected_fhir
+
+def test_fhir_server_integration():
+    # Load expected FHIR resource
+    with open(EXPECTED_FHIR_PATH, "r") as fhir_file:
+        fhir_resource = fhir_file.read()
+
+    # POST the resource to the FHIR server
+    response = requests.post(f"{FHIR_BASE_URL}/Coverage", json=fhir_resource)
+    
+    # Validate the response
+    assert response.status_code == 201
+    posted_resource = response.json()
+    assert posted_resource["resourceType"] == "Coverage"
+    assert posted_resource["status"] == "active"
+```
 
 ---
 
-## 🌟 Real-World Benefits
-- **💸 Cost Savings:** Automates payer workflows, reducing overhead.
-- **⚡ Efficiency:** Enables real-time data exchange.
-- **📏 Compliance:** Meets interoperability standards.
+## Steps to Test Using HAPI FHIR and Postman
+
+### Using HAPI FHIR Server
+1. **Start the Server:**
+   ```bash
+   java -jar hapi-fhir-jpaserver-example-*.jar
+   ```
+2. **Run Unit Tests:**
+   ```bash
+   pytest test_hl7_to_fhir.py
+   ```
+   Ensure all tests pass successfully.
+
+### Using Postman
+1. **Create a New Request:**
+   - Set the method to `POST`.
+   - Enter the URL: `http://localhost:8080/fhir/Coverage`.
+   - Add the `Content-Type: application/json` header.
+2. **Add the Payload:**
+   - Paste the content of `expected_fhir.json` into the request body.
+3. **Send the Request:**
+   - Verify the response status is `201 Created`.
+   - Check the returned FHIR resource for accuracy.
 
 ---
 
-## 📹 Tutorials and Demos
-🎥 Tutorials on:
-- HL7-to-FHIR conversion.
-- Validating FHIR resources.
-- Using APIs for payer workflows.
+## Notes
+- Update the `hl7_to_fhir_transform` function with the logic specific to your transformation requirements.
+- Expand the `test_hl7_to_fhir.py` file to include additional test cases for edge scenarios (e.g., missing fields, invalid formats).
 
-Stay tuned for links to YouTube demos! 📺
-Register for the full course here: https://stan.store/Flipping_Innovations/p/empowering-healthcare-tech-professionals
 ---
 
-## 📬 Questions or Feedback?
-Feel free to reach out via **Discussions** or open an **Issue**. Let’s innovate and make healthcare data more accessible and actionable! 💡
+By following this documentation, you can effectively test and validate HL7-to-FHIR transformations, ensuring compliance and reliability in your payer workflows.
